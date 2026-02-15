@@ -8,11 +8,11 @@ def create_app():
     app = Flask(__name__)
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "change_me")
 
-# refresh token ide u HttpOnly cookie (demo-friendly)
+
     app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
-    app.config["JWT_COOKIE_SECURE"] = False          # True na HTTPS (Oracle)
+    app.config["JWT_COOKIE_SECURE"] = False          
     app.config["JWT_COOKIE_SAMESITE"] = "Lax"
-    app.config["JWT_COOKIE_CSRF_PROTECT"] = False    # za demo; produkcija: True + CSRF header
+    app.config["JWT_COOKIE_CSRF_PROTECT"] = False    
     app.config["JWT_REFRESH_COOKIE_PATH"] = "/auth/refresh"
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "dev")
     JWTManager(app)

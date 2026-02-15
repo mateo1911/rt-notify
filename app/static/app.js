@@ -5,7 +5,7 @@ function getToken() {
 async function refreshAccessToken() {
   const res = await fetch("/auth/refresh", {
     method: "POST",
-    credentials: "same-origin", // bitno: šalje refresh cookie
+    credentials: "same-origin", 
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.access_token) return null;
@@ -21,7 +21,7 @@ async function api(path, options = {}) {
   if (token) headers["Authorization"] = "Bearer " + token;
 
   const fetchOpts = {
-    credentials: "same-origin", // bitno za cookie
+    credentials: "same-origin", 
     ...options,
     headers,
   };
@@ -29,7 +29,7 @@ async function api(path, options = {}) {
   let res = await fetch(path, fetchOpts);
   let data = await res.json().catch(() => ({}));
 
-  // access istekao -> refresh jednom pa retry
+ 
   if ((res.status === 401 || res.status === 422) && path !== "/auth/refresh") {
     const newToken = await refreshAccessToken();
     if (newToken) {
@@ -52,7 +52,7 @@ async function load() {
   const { res: r1, data: d1 } = await api("/notifications/unread-count");
   console.log("unread-count status:", r1.status, "data:", d1);
 
-  // redirect samo ako refresh nije pomogao
+ 
   if (r1.status === 401 || r1.status === 422) {
     window.location.replace("/login");
     return;
@@ -93,7 +93,7 @@ if (r2.ok && Array.isArray(list)) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // ako nema access tokena, probaj refresh iz cookie-a prije redirecta
+  
   (async () => {
     if (!getToken()) {
       const newToken = await refreshAccessToken();
@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const meEl = document.getElementById("me");
     if (meEl) meEl.textContent = localStorage.getItem("username") || "-";
 
-    // logout: obriši cookie (server) + local storage
+   
     const logoutBtn = document.getElementById("logout");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", async (e) => {
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // send notification
+   
     const sendForm = document.getElementById("sendForm");
     if (sendForm) {
       sendForm.addEventListener("submit", async (e) => {
@@ -150,11 +150,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // refresh
+    
     const refreshBtn = document.getElementById("refresh");
     if (refreshBtn) refreshBtn.addEventListener("click", load);
 
-    // mark read
+    
     const markReadBtn = document.getElementById("markRead");
     if (markReadBtn) {
       markReadBtn.addEventListener("click", async () => {
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // clear messages
+    
     const clearBtn = document.getElementById("clear");
     if (clearBtn) {
       clearBtn.addEventListener("click", async () => {

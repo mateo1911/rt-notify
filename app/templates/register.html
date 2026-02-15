@@ -48,7 +48,7 @@
       const data = await res.json().catch(()=>({}));
       const msg = document.getElementById("msg");
 
-      msg.textContent = res.ok ? "Registracija OK ✅" : (data.error || "Register error");
+      msg.textContent = res.ok ? "Registracija OK " : (data.error || "Register error");
       msg.className = res.ok ? "msg-ok" : "msg-err";
 
       if (res.ok) setTimeout(()=>window.location.replace("/login"), 600);

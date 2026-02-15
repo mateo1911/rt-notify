@@ -24,7 +24,7 @@ def register():
     if r.exists(user_key(username)):
         return jsonify({"error": "Korisnik već postoji"}), 409
 
-    # DEMO: password u redis (plain). Za produkciju: hash (bcrypt).
+    
     r.hset(user_key(username), mapping={"username": username, "password": password})
     r.set(f"user:{username}:unread", 0)
     return jsonify({"message": "Registracija uspješna"}), 201
@@ -43,7 +43,7 @@ def login():
     refresh = create_refresh_token(identity=username)
 
     resp = make_response(jsonify({"access_token": access}), 200)
-    set_refresh_cookies(resp, refresh)  # HttpOnly cookie
+    set_refresh_cookies(resp, refresh)  
     return resp
 
 @auth_bp.post("/refresh")
@@ -56,5 +56,5 @@ def refresh():
 @auth_bp.post("/logout")
 def logout():
     resp = make_response(jsonify({"message": "Logged out"}), 200)
-    unset_jwt_cookies(resp)  # briše refresh cookie
+    unset_jwt_cookies(resp) 
     return resp
