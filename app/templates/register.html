@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">RT Notify <span class="badge">Kafka + Redis</span></div>
+      <div class="muted">Imaš račun? <a href="/login">Login</a></div>
+    </div>
+
+    <div class="card" style="max-width:520px;margin:0 auto;">
+      <h1>Register</h1>
+      <p class="muted">Kreiraj korisnika (preporuka: mala slova).</p>
+
+      <form id="regForm">
+        <label>Username</label>
+        <input id="username" autocomplete="username" />
+
+        <label>Password</label>
+        <input id="password" type="password" autocomplete="new-password" />
+
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">Create account</button>
+          <span id="msg" class="muted"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("regForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      const res = await fetch("/auth/register", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({username, password}),
+        credentials: "same-origin"
+      });
+
+      const data = await res.json().catch(()=>({}));
+      const msg = document.getElementById("msg");
+
+      msg.textContent = res.ok ? "Registracija OK ✅" : (data.error || "Register error");
+      msg.className = res.ok ? "msg-ok" : "msg-err";
+
+      if (res.ok) setTimeout(()=>window.location.replace("/login"), 600);
+    });
+  </script>
+</body>
+</html>

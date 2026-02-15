@@ -1,21 +1,20 @@
 import time
+import json
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .redis_client import get_redis
 from .kafka_client import get_producer, get_topic
-import json
 
 notif_bp = Blueprint("notifications", __name__, url_prefix="/notifications")
 
 r = get_redis()
-producer = get_producer()
 TOPIC = get_topic()
 
 @notif_bp.post("")
 @jwt_required()
 def create_notification():
     sender = get_jwt_identity()
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
 
     to_user = (data.get("to_user") or "").strip()
     message = (data.get("message") or "").strip()
@@ -31,8 +30,10 @@ def create_notification():
         "ts": int(time.time()),
     }
 
+    producer = get_producer()
     producer.send(TOPIC, event)
     producer.flush()
+
     return jsonify({"message": "Notifikacija poslana (Kafka)", "event": event}), 201
 
 @notif_bp.get("")
@@ -41,18 +42,26 @@ def list_notifications():
     user = get_jwt_identity()
     raw = r.lrange(f"user:{user}:notifications", 0, 19)
     items = [json.loads(x) for x in raw]
-    return jsonify(items)
+    return jsonify(items), 200
 
 @notif_bp.get("/unread-count")
 @jwt_required()
 def unread_count():
     user = get_jwt_identity()
     cnt = int(r.get(f"user:{user}:unread") or 0)
-    return jsonify({"user": user, "unread": cnt})
+    return jsonify({"user": user, "unread": cnt}), 200
 
 @notif_bp.post("/mark-read")
 @jwt_required()
 def mark_read():
     user = get_jwt_identity()
     r.set(f"user:{user}:unread", 0)
-    return jsonify({"message": "Označeno kao pročitano"})
+    return jsonify({"message": "Označeno kao pročitano"}), 200
+
+@notif_bp.post("/clear")
+@jwt_required()
+def clear_notifications():
+    user = get_jwt_identity()
+    r.delete(f"user:{user}:notifications")
+    r.set(f"user:{user}:unread", 0)
+    return jsonify({"message": "Sve poruke obrisane"}), 200

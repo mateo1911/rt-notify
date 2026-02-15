@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">RT Notify <span class="badge">Dashboard</span></div>
+      <div class="kpi">
+        <span class="muted">Logged in as:</span> <b id="me">-</b>
+        <button id="logout" class="btn btn-danger" type="button">Logout</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h1>Send notification</h1>
+        <p class="muted">Event ide u Kafka → Worker sprema u Redis.</p>
+
+        <form id="sendForm">
+          <label>To user</label>
+          <input id="toUser" placeholder="npr. monika" />
+
+          <label>Message</label>
+          <textarea id="message" placeholder="Upiši poruku…"></textarea>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Send</button>
+            <span id="sendMsg" class="muted"></span>
+          </div>
+        </form>
+
+        <hr />
+
+        <div class="actions">
+          <button id="refresh" class="btn" type="button">Refresh</button>
+          <button id="markRead" class="btn" type="button">Mark read</button>
+          <button id="clear" class="btn btn-danger" type="button">Clear</button>
+          <div class="kpi"><span class="muted">Unread:</span> <b id="unread">0</b></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h1>Inbox</h1>
+        <p class="muted">Zadnjih 20 notifikacija za trenutnog usera.</p>
+        <ul id="list" class="list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

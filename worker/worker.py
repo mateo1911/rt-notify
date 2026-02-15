@@ -1,7 +1,9 @@
 import os
 import json
+import time
 import redis
 from kafka import KafkaConsumer
+from kafka.errors import NoBrokersAvailable
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
@@ -10,15 +12,29 @@ TOPIC = os.getenv("KAFKA_TOPIC", "notifications")
 
 r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
 
-consumer = KafkaConsumer(
-    TOPIC,
-    bootstrap_servers=[KAFKA_BOOTSTRAP],
-    value_deserializer=lambda m: json.loads(m.decode("utf-8")),
-    group_id="notif-consumers",
-    auto_offset_reset="earliest",
-    enable_auto_commit=True,
-)
+def connect_consumer(retries=60, delay=2.0):
+    last_err = None
+    for i in range(retries):
+        try:
+            c = KafkaConsumer(
+                TOPIC,
+                bootstrap_servers=[KAFKA_BOOTSTRAP],
+                value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+                group_id="notif-consumers",
+                auto_offset_reset="earliest",
+                enable_auto_commit=True,
+                request_timeout_ms=20000,
+                api_version_auto_timeout_ms=20000,
+            )
+            print(f"Connected to Kafka on attempt {i+1}. Topic={TOPIC}")
+            return c
+        except NoBrokersAvailable as e:
+            last_err = e
+            print(f"Kafka not ready (attempt {i+1}/{retries})... waiting {delay}s")
+            time.sleep(delay)
+    raise last_err or NoBrokersAvailable()
 
+consumer = connect_consumer()
 print("Worker started. Listening on topic:", TOPIC)
 
 for msg in consumer:
